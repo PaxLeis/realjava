@@ -12,6 +12,7 @@ body {
   background-color: black;
   color: white;
 }
+
 /* Search bar styling */
 #search-container {
   padding: 10px;
@@ -30,7 +31,7 @@ body {
   border-radius: 4px;
 }
 
-/* Top bar for fullscreen exit button */
+/* Top bar with fullscreen button */
 #fullscreen-topbar {
   display: none;
   position: fixed;
@@ -43,7 +44,7 @@ body {
   justify-content: flex-end;
   padding: 0 10px;
 }
-#exit-fullscreen-btn {
+#fullscreen-topbar button {
   background: #555;
   color: #fff;
   border: none;
@@ -51,7 +52,7 @@ body {
   border-radius: 4px;
   cursor: pointer;
 }
-#exit-fullscreen-btn:hover {
+#fullscreen-topbar button:hover {
   background: #777;
 }
 
@@ -110,9 +111,10 @@ body {
   </form>
 </div>
 
-<!-- Top bar for exit fullscreen -->
+<!-- Top bar for fullscreen toggle -->
 <div id="fullscreen-topbar">
   <button id="exit-fullscreen-btn">Exit Fullscreen</button>
+  <button id="enter-fullscreen-btn">Fullscreen</button>
 </div>
 
 <!-- Popup for game -->
@@ -122,26 +124,39 @@ body {
     <button id="popup-close">&times;</button>
   </div>
   <div id="popup-content">
-    <!-- iframe will be inserted here dynamically -->
+    <!-- iframe will be inserted here -->
   </div>
 </div>
 
 <script>
-const validFiles = ['survivalrace.html', 'amongus.html', '1v1lol.html', 'snowrider.html', 'pollytrack.html', 'smashyroad.html'];
+const validFiles = [
+  'survivalrace.html', 'amongus.html', '1v1lol.html',
+  'snowrider.html', 'pollytrack.html', 'smashyroad.html'
+];
+
 const popup = document.getElementById('popup');
 const popupTitle = document.getElementById('popup-title');
 const popupCloseBtn = document.getElementById('popup-close');
 const iframeContainer = document.getElementById('popup-content');
 const topbar = document.getElementById('fullscreen-topbar');
-const exitFullscreenBtn = document.getElementById('exit-fullscreen-btn');
+const enterBtn = document.getElementById('enter-fullscreen-btn');
+const exitBtn = document.getElementById('exit-fullscreen-btn');
 
 let iframe = null;
 
-// Handle search
+// Search handler
 document.getElementById('search-form').onsubmit = () => {
   const filename = document.getElementById('search-box').value.trim();
   if (filename.toLowerCase() === 'password') {
-    alert(`8 Ball - "8ball.html"\nCar Arena - "car-arena.html"\nFlappy Dunk - "flappy-dunk.html"\nSnow Rider 3d - "snow-rider.html"\nPolly Track - "polly-track.html"\nMinecraft-parkour - "mine-park.html"\nSmashy Road - "escape-dunk.html"\nAmong Us - "amongus.html"\n1v1.lol - "1v1lol.html"`);
+    alert(`8 Ball - "8ball.html"
+Car Arena - "car-arena.html"
+Flappy Dunk - "flappy-dunk.html"
+Snow Rider 3d - "snow-rider.html"
+Polly Track - "polly-track.html"
+Minecraft-parkour - "mine-park.html"
+Smashy Road - "escape-dunk.html"
+Among Us - "amongus.html"
+1v1.lol - "1v1lol.html"`);
   } else if (validFiles.includes(filename.toLowerCase())) {
     if (iframe) {
       iframe.remove();
@@ -153,15 +168,16 @@ document.getElementById('search-form').onsubmit = () => {
     iframe.style.height = '100%';
     iframeContainer.appendChild(iframe);
     popup.style.display = 'flex';
-    // Reset fullscreen
+    // Reset
     iframe.classList.remove('fullscreen');
     hideTopbar();
   } else {
-    window.open('https://www.google.com/search?q=' + encodeURIComponent(filename), '_blank');
+    window.open(`https://www.google.com/search?q=${encodeURIComponent(filename)}`, '_blank');
   }
   return false;
 };
 
+// Close popup
 popupCloseBtn.onclick = () => {
   popup.style.display='none';
   if (iframe) {
@@ -179,23 +195,23 @@ function hideTopbar() {
   topbar.style.display='none';
 }
 
-// Enter fullscreen (via API or fallback)
+// Enter fullscreen API
 function enterFullscreen() {
   if (!iframe) return;
   if (iframe.requestFullscreen) {
     iframe.requestFullscreen();
-  } else if (iframe.webkitRequestFullscreen) { /* Safari */
+  } else if (iframe.webkitRequestFullscreen) {
     iframe.webkitRequestFullscreen();
-  } else if (iframe.msRequestFullscreen) { /* IE11 */
+  } else if (iframe.msRequestFullscreen) {
     iframe.msRequestFullscreen();
   } else {
-    // fallback: make iframe cover entire viewport
+    // fallback: toggle class
     iframe.classList.add('fullscreen');
   }
   showTopbar();
 }
 
-// Exit fullscreen
+// Exit fullscreen API
 function exitFullscreen() {
   if (document.fullscreenElement) {
     document.exitFullscreen();
@@ -206,7 +222,10 @@ function exitFullscreen() {
   hideTopbar();
 }
 
-// Button event
+// Button event handlers
+document.getElementById('enter-fullscreen-btn').onclick = () => {
+  enterFullscreen();
+};
 document.getElementById('exit-fullscreen-btn').onclick = () => {
   exitFullscreen();
 };
