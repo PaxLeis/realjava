@@ -3,23 +3,22 @@
 <head>
 <meta charset="UTF-8" />
 <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-<title>realjava</title>
+<title>Game Loader</title>
 <style>
   body {
     font-family: Arial, sans-serif;
-    padding: 20px;
-    background-color: black; /* Set background to black */
-    color: white;
     margin: 0;
+    padding: 20px;
+    background-color: black;
+    color: white;
   }
-  /* Search bar styling */
   #search-container {
     padding: 10px;
     background-color: #111;
     display: flex;
     justify-content: center;
   }
-  #search-input {
+  #search-box {
     width: 60%;
     max-width: 500px;
     padding: 8px 12px;
@@ -27,312 +26,86 @@
     border: 2px solid #ccc;
     border-radius: 4px;
   }
-  /* Modal styles for game */
-  .modal {
-    display: none; /* Hidden by default */
-    position: fixed; 
-    z-index: 1000; 
-    left: 0;
-    top: 0;
-    width: 100%; 
-    height: 100%; 
-    overflow: auto; 
-    background-color: rgba(0,0,0,0.8);
-  }
-  .modal-content {
-    background-color: #222;
-    margin: 5% auto;
-    padding: 0;
-    border-radius: 8px;
-    width: 90%;
-    height: 80%;
-    display: flex;
-    flex-direction: column;
-  }
-  #fullscreenBar {
+  /* Popup styles */
+  #popup {
     display: none;
-    background: #444;
-    padding: 4px 8px;
     position: fixed;
-    top: 0;
-    left: 0;
-    width: 100%;
-    z-index: 1100;
-    justify-content: flex-end;
-    height: 30px;
-    align-items: center;
+    top: 50%;
+    left: 50%;
+    transform: translate(-50%, -50%);
+    background: #222;
+    padding: 20px;
+    max-width: 600px;
+    width: 80%;
+    max-height: 80%;
+    overflow: auto;
+    border-radius: 10px;
+    border: 2px solid #fff;
+    z-index: 9999;
   }
-  #fullscreenBar button {
+  #popup h2 {
+    margin-top: 0;
+  }
+  #popup iframe {
+    width: 100%;
+    height: 400px;
+    border: none;
+  }
+  #close-btn {
+    margin-top: 10px;
+    padding: 8px 12px;
     background: #555;
     color: #fff;
     border: none;
-    padding: 4px 8px;
-    font-size: 14px;
     border-radius: 4px;
+    cursor: pointer;
   }
-  #fullscreenBar button:hover {
+  #close-btn:hover {
     background: #777;
-  }
-  .header {
-    display: flex;
-    justify-content: space-between;
-    padding: 10px;
-  }
-  .close {
-    font-size: 24px; 
-    font-weight: bold; 
-    cursor: pointer;
-    color: #fff;
-  }
-  #fullscreenBtn {
-    padding: 5px 10px;
-    background-color: #555;
-    color: #fff;
-    border: none;
-    border-radius: 4px;
-    cursor: pointer;
-  }
-  #fullscreenBtn:hover {
-    background-color: #777;
-  }
-  iframe {
-    flex: 1;
-    width: 100%;
-    border: none;
-    border-radius: 0 0 8px 8px;
   }
 </style>
 </head>
 <body>
 
-<!-- Search bar -->
 <div id="search-container">
-  <form id="searchForm" action="#" method="GET" onsubmit="return false;">
-    <input type="text" id="search-input" placeholder="Type filename (e.g., 1v1lol.html)" />
+  <form id="search-form" onsubmit="return false;">
+    <input type="text" id="search-box" placeholder="Type filename like 1v1lol.html" />
   </form>
 </div>
 
-<h1 style="color:white;">"realhtml" Try Me!</h1>
-
-<!-- Buttons for quick access (optional, can be kept or removed) -->
-<button data-game="survivalrace.html">Survival Race</button>
-<button data-game="amongus.html">Among Us</button>
-<button data-game="1v1lol.html">1v1.lol</button>
-<button data-game="snowrider.html">Snow Rider</button>
-<button data-game="pollytrack.html">Polly Track</button>
-<button data-game="smashyroad.html">Smashy Road</button>
-
-<!-- Fullscreen tab bar -->
-<div id="fullscreenBar">
-  <button id="exitFullscreenBtn">↘️</button>
-</div>
-
-<!-- Game modal -->
-<div id="gameModal" class="modal">
-  <div class="modal-content" id="modalContent">
-    <div class="header">
-      <div>
-        <button id="fullscreenBtn">↖️</button>
-      </div>
-      <div>
-        <div class="close">&times;</div>
-      </div>
-    </div>
-    <iframe id="gameFrame" src=""></iframe>
-  </div>
+<!-- Popup to load the game file -->
+<div id="popup">
+  <h2 id="popup-title"></h2>
+  <iframe id="game-frame" src=""></iframe>
+  <button id="close-btn">Close</button>
 </div>
 
 <script>
-const modal = document.getElementById('gameModal');
-const iframe = document.getElementById('gameFrame');
-const closeBtn = document.querySelector('.close');
-const fullscreenBtn = document.getElementById('fullscreenBtn');
-const fullscreenBar = document.getElementById('fullscreenBar');
-const exitFullscreenBtn = document.getElementById('exitFullscreenBtn');
+const popup = document.getElementById('popup');
+const iframe = document.getElementById('game-frame');
+const closeBtn = document.getElementById('close-btn');
 
-let isFullscreen = false;
+const validFiles = ['survivalrace.html', 'amongus.html', '1v1lol.html', 'snowrider.html', 'pollytrack.html', 'smashyroad.html'];
 
-// Mapping filenames to content
-const gameMap = {
-  'survivalrace.html': {
-    title: 'Survival Race',
-    content: `8 Ball - "8ball.html"
-Car Arena - "car-arena.html"
-Flappy Dunk - "flappy-dunk.html"
-Snow Rider 3d - "snow-rider.html"
-Polly Track - "polly-track.html"
-Minecraft-parkour - "mine-park.html"
-Smashy Road - "escape-dunk.html"
-Among Us - "amongus.html"
-1v1.lol - "1v1lol.html"`
-  },
-  'amongus.html': {
-    title: 'Among Us',
-    content: `8 Ball - "8ball.html"
-Car Arena - "car-arena.html"
-Flappy Dunk - "flappy-dunk.html"
-Snow Rider 3d - "snow-rider.html"
-Polly Track - "polly-track.html"
-Minecraft-parkour - "mine-park.html"
-Smashy Road - "escape-dunk.html"
-Among Us - "amongus.html"
-1v1.lol - "1v1lol.html"`
-  },
-  '1v1lol.html': {
-    title: '1v1.lol',
-    content: `8 Ball - "8ball.html"
-Car Arena - "car-arena.html"
-Flappy Dunk - "flappy-dunk.html"
-Snow Rider 3d - "snow-rider.html"
-Polly Track - "polly-track.html"
-Minecraft-parkour - "mine-park.html"
-Smashy Road - "escape-dunk.html"
-Among Us - "amongus.html"
-1v1.lol - "1v1lol.html"`
-  },
-  'snowrider.html': {
-    title: 'Snow Rider 3D',
-    content: `8 Ball - "8ball.html"
-Car Arena - "car-arena.html"
-Flappy Dunk - "flappy-dunk.html"
-Snow Rider 3d - "snow-rider.html"
-Polly Track - "polly-track.html"
-Minecraft-parkour - "mine-park.html"
-Smashy Road - "escape-dunk.html"
-Among Us - "amongus.html"
-1v1.lol - "1v1lol.html"`
-  },
-  'pollytrack.html': {
-    title: 'Polly Track',
-    content: `8 Ball - "8ball.html"
-Car Arena - "car-arena.html"
-Flappy Dunk - "flappy-dunk.html"
-Snow Rider 3d - "snow-rider.html"
-Polly Track - "polly-track.html"
-Minecraft-parkour - "mine-park.html"
-Smashy Road - "escape-dunk.html"
-Among Us - "amongus.html"
-1v1.lol - "1v1lol.html"`
-  },
-  'smashyroad.html': {
-    title: 'Smashy Road',
-    content: `8 Ball - "8ball.html"
-Car Arena - "car-arena.html"
-Flappy Dunk - "flappy-dunk.html"
-Snow Rider 3d - "snow-rider.html"
-Polly Track - "polly-track.html"
-Minecraft-parkour - "mine-park.html"
-Smashy Road - "escape-dunk.html"
-Among Us - "amongus.html"
-1v1.lol - "1v1lol.html"`
-  }
-};
-
-// Search handling
-document.getElementById('searchForm').addEventListener('submit', function(e) {
-  e.preventDefault();
-  const query = document.getElementById('search-input').value.trim().toLowerCase();
-  if (gameMap.hasOwnProperty(query)) {
-    // Show popup for the game
-    document.getElementById('modalContent').querySelector('.close').style.display = 'block'; // ensure close button visible
-    document.querySelector('#popup h2')?.remove(); // remove existing titles if any
-    // Since modal content is dynamic, replace innerHTML
-    document.getElementById('modalContent').innerHTML = `
-      <div class="header">
-        <div>
-          <button id="fullscreenBtn">↖️</button>
-        </div>
-        <div>
-          <div class="close">&times;</div>
-        </div>
-      </div>
-      <iframe id="gameFrame" src=""></iframe>`;
-    const data = gameMap[query];
-    // Set title
-    const headerDiv = document.createElement('h2');
-    headerDiv.id = 'popup-title';
-    headerDiv.textContent = data.title;
-    document.getElementById('modalContent').insertBefore(headerDiv, document.getElementById('gameFrame'));
-
-    // Set content
-    const pre = document.createElement('pre');
-    pre.id = 'popup-content';
-    pre.textContent = data.content;
-    document.getElementById('modalContent').insertBefore(pre, document.getElementById('gameFrame'));
-
-    // Show modal
-    document.getElementById('gameModal').style.display = 'block';
-
-    // Attach close event
-    document.querySelector('.close').onclick = () => {
-      document.getElementById('gameModal').style.display = 'none';
-    };
-
-    // Load a dummy URL or actual game URL if you have one
-    document.getElementById('gameFrame').src = query; // or actual game URL
+document.getElementById('search-form').onsubmit = () => {
+  const filename = document.getElementById('search-box').value.trim();
+  if (validFiles.includes(filename)) {
+    // Open popup and load the file
+    document.getElementById('popup-title').textContent = filename;
+    iframe.src = filename; // loads the file from the same folder
+    popup.style.display = 'block';
   } else {
-    // If not found, open Google search
-    window.open('https://www.google.com/search?q=' + encodeURIComponent(query), '_blank');
+    // Optional: fallback to google search if file not recognized
+    window.open('https://www.google.com/search?q=' + encodeURIComponent(filename), '_blank');
   }
-});
-
-// Optional: add button clicks for quick access
-document.querySelectorAll('button[data-game]').forEach(btn => {
-  btn.onclick = () => {
-    const gameFile = btn.getAttribute('data-game');
-    // Trigger the search logic for consistency
-    document.getElementById('search-input').value = gameFile;
-    document.getElementById('searchForm').dispatchEvent(new Event('submit'));
-  };
-});
-
-// Close modal when clicking outside
-window.onclick = (e) => {
-  if (e.target === document.getElementById('gameModal')) {
-    document.getElementById('gameModal').style.display = 'none';
-  }
+  return false; // prevent default form submission
 };
 
-// Fullscreen toggle functions (if needed)
-const fullscreenBtn = document.getElementById('fullscreenBtn');
-const fullscreenBar = document.getElementById('fullscreenBar');
-const exitFullscreenBtn = document.getElementById('exitFullscreenBtn');
-const iframe = document.getElementById('gameFrame');
-
-let isFullscreen = false;
-
-fullscreenBtn.onclick = () => {
-  if (!isFullscreen) {
-    iframe.style.position = 'fixed';
-    iframe.style.top = '0';
-    iframe.style.left = '0';
-    iframe.style.width = '100vw';
-    iframe.style.height = '100vh';
-    isFullscreen = true;
-    fullscreenBtn.textContent = 'Exit Fullscreen';
-    fullscreenBar.style.display = 'flex';
-  } else {
-    iframe.style.position = '';
-    iframe.style.top = '';
-    iframe.style.left = '';
-    iframe.style.width = '';
-    iframe.style.height = '';
-    isFullscreen = false;
-    fullscreenBtn.textContent = '↖️';
-    fullscreenBar.style.display = 'none';
-  }
-};
-
-exitFullscreenBtn.onclick = () => {
-  iframe.style.position = '';
-  iframe.style.top = '';
-  iframe.style.left = '';
-  iframe.style.width = '';
-  iframe.style.height = '';
-  isFullscreen = false;
-  fullscreenBtn.textContent = '↖️';
-  fullscreenBar.style.display = 'none';
+closeBtn.onclick = () => {
+  popup.style.display = 'none';
+  iframe.src = '';
 };
 </script>
+
 </body>
 </html>
