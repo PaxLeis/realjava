@@ -3,7 +3,7 @@
 <head>
 <meta charset="UTF-8" />
 <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-<title>Resizable Popup</title>
+<title>Game Loader with Fullscreen</title>
 <style>
   body {
     font-family: Arial, sans-serif;
@@ -26,63 +26,61 @@
     border: 2px solid #ccc;
     border-radius: 4px;
   }
-
   /* Popup styles */
   #popup {
     display: none;
     position: fixed;
     top: 50%;
     left: 50%;
-    width: 600px;
-    height: 400px;
-    max-width: 80%;
-    max-height: 80%;
     transform: translate(-50%, -50%);
     background: #222;
-    border: 2px solid #fff;
+    padding: 20px;
+    max-width: 600px;
+    width: 80%;
+    max-height: 80%;
+    overflow: auto;
     border-radius: 10px;
-    overflow: hidden;
+    border: 2px solid #fff;
     z-index: 9999;
-    display: flex;
-    flex-direction: column;
   }
-  #popup-header {
-    background-color: #333;
-    padding: 8px;
-    display: flex;
-    justify-content: space-between;
-    align-items: center;
+  #popup h2 {
+    margin-top: 0;
   }
-  #popup-header h2 {
-    margin: 0;
-    font-size: 16px;
+  #popup pre {
+    white-space: pre-wrap;
   }
-  #popup-close {
-    background: none;
-    border: none;
+  #popup #fullscreen-toggle {
+    margin-top: 10px;
+    padding: 8px 12px;
+    background: #555;
     color: #fff;
-    font-size: 20px;
+    border: none;
+    border-radius: 4px;
     cursor: pointer;
   }
-  #popup-content {
-    flex: 1;
-    position: relative;
+  #popup #fullscreen-toggle:hover {
+    background: #777;
   }
-  #popup iframe {
-    width: 100%;
-    height: 100%;
+  #popup #close-btn {
+    margin-top: 10px;
+    padding: 8px 12px;
+    background: #555;
+    color: #fff;
     border: none;
+    border-radius: 4px;
+    cursor: pointer;
   }
-  /* Resize handle */
-  #resize-handle {
-    width: 20px;
-    height: 20px;
-    background: transparent;
-    position: absolute;
-    right: 0;
-    bottom: 0;
-    cursor: nwse-resize;
-    z-index: 10;
+  #popup #close-btn:hover {
+    background: #777;
+  }
+  /* Style for iframe when fullscreen mode toggled */
+  #game-iframe.fullscreen {
+    position: fixed;
+    top: 0;
+    left: 0;
+    width: 100vw;
+    height: 100vh;
+    z-index: 9998;
   }
 </style>
 </head>
@@ -94,33 +92,30 @@
   </form>
 </div>
 
-<!-- Popup -->
+<!-- Popup for code or game -->
 <div id="popup">
-  <div id="popup-header">
-    <h2 id="popup-title"></h2>
-    <button id="popup-close">&times;</button>
-  </div>
-  <div id="popup-content">
-    <!-- iframe will be inserted here dynamically -->
-    <div id="resize-handle"></div>
-  </div>
+  <h2 id="popup-title"></h2>
+  <pre id="popup-text"></pre>
+  <button id="fullscreen-toggle">Fullscreen</button>
+  <button id="close-btn">Close</button>
 </div>
 
 <script>
 const validFiles = ['survivalrace.html', 'amongus.html', '1v1lol.html', 'snowrider.html', 'pollytrack.html', 'smashyroad.html'];
+
 const popup = document.getElementById('popup');
 const popupTitle = document.getElementById('popup-title');
-const popupCloseBtn = document.getElementById('popup-close');
-const popupContent = document.getElementById('popup-content');
-const resizeHandle = document.getElementById('resize-handle');
+const popupText = document.getElementById('popup-text');
+const closeBtn = document.getElementById('close-btn');
+const fullscreenBtn = document.getElementById('fullscreen-toggle');
+const iframe = document.createElement('iframe');
 
-let iframe = null;
-
-// Show popup with iframe when searching
 document.getElementById('search-form').onsubmit = () => {
   const filename = document.getElementById('search-box').value.trim();
   if (filename.toLowerCase() === 'password') {
-    alert(`8 Ball - "8ball.html"
+    // Show the secret code list
+    popupTitle.textContent = 'Game List';
+    popupText.textContent = `8 Ball - "8ball.html"
 Car Arena - "car-arena.html"
 Flappy Dunk - "flappy-dunk.html"
 Snow Rider 3d - "snow-rider.html"
@@ -128,59 +123,53 @@ Polly Track - "polly-track.html"
 Minecraft-parkour - "mine-park.html"
 Smashy Road - "escape-dunk.html"
 Among Us - "amongus.html"
-1v1.lol - "1v1lol.html"`);
+1v1.lol - "1v1lol.html"`;
+    popup.appendChild(iframe);
+    iframe.style.width = '100%';
+    iframe.style.height = '400px';
+    iframe.style.border = 'none';
+    iframe.src = '';
+    popup.style.display = 'block';
   } else if (validFiles.includes(filename.toLowerCase())) {
-    // Remove existing iframe if any
-    if (iframe && iframe.parentNode) {
+    // Show game popup with iframe
+    popupTitle.textContent = filename;
+    popupText.textContent = '';
+    // Remove previous iframe if any
+    if (iframe.parentNode) {
       iframe.remove();
     }
-    // Create new iframe
-    iframe = document.createElement('iframe');
+    // Append new iframe
+    popup.appendChild(iframe);
     iframe.src = filename;
-    // Reset size to default
-    popup.style.width = '600px';
-    popup.style.height = '400px';
-    // Append iframe
-    document.querySelector('#popup-content').insertBefore(iframe, resizeHandle);
+    iframe.style.width = '100%';
+    iframe.style.height = '400px';
+    iframe.style.border = 'none';
+
+    // Reset fullscreen class
+    iframe.classList.remove('fullscreen');
+
     // Show popup
-    popup.style.display = 'flex';
+    popup.style.display = 'block';
+
   } else {
+    // fallback: Google search
     window.open('https://www.google.com/search?q=' + encodeURIComponent(filename), '_blank');
   }
   return false;
 };
 
-// Close popup
-popupCloseBtn.onclick = () => {
-  popup.style.display = 'none';
-  if (iframe && iframe.parentNode) {
-    iframe.remove();
-  }
+closeBtn.onclick = () => {
+  popup.style.display='none';
 };
 
-// Drag to resize
-let isResizing = false;
-
-resizeHandle.onmousedown = (e) => {
-  isResizing = true;
-  e.preventDefault();
-};
-
-document.addEventListener('mousemove', (e) => {
-  if (isResizing) {
-    // Calculate new size
-    const rect = popup.getBoundingClientRect();
-    const newWidth = e.clientX - rect.left;
-    const newHeight = e.clientY - rect.top;
-    // Set new size with min limits
-    popup.style.width = Math.max(newWidth, 200) + 'px';
-    popup.style.height = Math.max(newHeight, 150) + 'px';
+// Toggle fullscreen on click
+document.getElementById('fullscreen-toggle').onclick = () => {
+  if (iframe.classList.contains('fullscreen')) {
+    iframe.classList.remove('fullscreen');
+  } else {
+    iframe.classList.add('fullscreen');
   }
-});
-
-document.addEventListener('mouseup', () => {
-  isResizing = false;
-});
+};
 </script>
 
 </body>
