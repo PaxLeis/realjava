@@ -1,0 +1,215 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8" />
+<meta name="viewport" content="width=device-width, initial-scale=1.0" />
+<title>realjava</title>
+<style>
+  body {
+    font-family: Arial, sans-serif;
+    padding: 20px;
+    background-color: black; /* Set background to black */
+    color: white;
+  }
+  button {
+    margin: 10px;
+    padding: 10px 20px;
+    font-size: 16px;
+    cursor: pointer;
+  }
+  /* Modal styles */
+  .modal {
+    display: none; /* Hidden by default */
+    position: fixed; 
+    z-index: 1000; 
+    left: 0;
+    top: 0;
+    width: 100%; 
+    height: 100%; 
+    overflow: auto; 
+    background-color: rgba(0,0,0,0.8);
+  }
+  .modal-content {
+    background-color: #222;
+    margin: 5% auto;
+    padding: 0;
+    border-radius: 8px;
+    width: 90%;
+    height: 80%;
+    display: flex;
+    flex-direction: column;
+    position: relative;
+  }
+ #fullscreenBar {
+  display: none; /* Hidden by default */
+  background: #444;
+  padding: 4px 8px; /* Smaller padding */
+  position: fixed;
+  top: 0;
+  left: 0;
+  width: 100%;
+  z-index: 1100;
+  justify-content: flex-end;
+  height: 30px; /* Optional: set a specific height */
+  align-items: center; /* Vertically center content */
+}
+#fullscreenBar button {
+  background: #555;
+  color: #fff;
+  border: none;
+  padding: 4px 8px; /* Smaller padding for button */
+  font-size: 14px; /* Smaller font size */
+  border-radius: 4px;
+  cursor: pointer;
+}
+#fullscreenBar button:hover {
+  background: #777;
+}
+  .header {
+    display: flex;
+    justify-content: space-between;
+    padding: 10px;
+  }
+  .close {
+    font-size: 24px; 
+    font-weight: bold; 
+    cursor: pointer;
+    color: #fff;
+  }
+  #fullscreenBtn {
+    padding: 5px 10px;
+    background-color: #555;
+    color: #fff;
+    border: none;
+    border-radius: 4px;
+    cursor: pointer;
+  }
+  #fullscreenBtn:hover {
+    background-color: #777;
+  }
+  iframe {
+    flex: 1;
+    width: 100%;
+    border: none;
+    border-radius: 0 0 8px 8px;
+  }
+</style>
+</head>
+<body>
+
+<h1 style="color:white;">Open Your External HTML Games</h1>
+
+<!-- Buttons to load your games -->
+<button data-game="survivalrace.html">Survival Race</button>
+<button data-game="amongus.html">Among Us</button>
+<button data-game="1v1lol.html">1v1.lol</button>
+<button data-game="snowrider.html">Snow Rider</button>
+
+<!-- Top tab bar, only visible in fullscreen -->
+<div id="fullscreenBar">
+  <button id="exitFullscreenBtn">↘️</button>
+</div>
+
+<!-- Modal for game -->
+<div id="gameModal" class="modal">
+  <div class="modal-content" id="modalContent">
+    <div class="header">
+      <div>
+        <button id="fullscreenBtn">↖️</button>
+      </div>
+      <div>
+        <div class="close">&times;</div>
+      </div>
+    </div>
+    <iframe id="gameFrame" src=""></iframe>
+  </div>
+</div>
+
+<script>
+const modal = document.getElementById('gameModal');
+const iframe = document.getElementById('gameFrame');
+const closeBtn = document.querySelector('.close');
+const fullscreenBtn = document.getElementById('fullscreenBtn');
+const fullscreenBar = document.getElementById('fullscreenBar');
+const exitFullscreenBtn = document.getElementById('exitFullscreenBtn');
+
+let currentGame = '';
+let isFullscreen = false;
+
+// REMOVE this part to prevent auto fullscreen on reload
+// const savedFullscreen = localStorage.getItem('fullscreen');
+// if (savedFullscreen === 'true') {
+//   isFullscreen = true;
+//   // Remember, we are not calling enterFullscreen() automatically
+// }
+
+// When a game button is clicked
+document.querySelectorAll('button[data-game]').forEach(btn => {
+  btn.onclick = () => {
+    const gameFile = btn.getAttribute('data-game');
+    currentGame = gameFile;
+    iframe.src = gameFile;
+    modal.style.display = 'block';
+
+    // Do NOT auto-enter fullscreen here
+  }
+});
+
+// Close modal
+closeBtn.onclick = () => {
+  modal.style.display = 'none';
+  iframe.src = '';
+  exitFullscreen();
+}
+
+// Click outside modal closes it
+window.onclick = (e) => {
+  if (e.target === modal) {
+    modal.style.display = 'none';
+    iframe.src = '';
+    exitFullscreen();
+  }
+}
+
+// Toggle fullscreen on button click
+fullscreenBtn.onclick = () => {
+  if (!isFullscreen) {
+    enterFullscreen();
+  } else {
+    exitFullscreen();
+  }
+  localStorage.setItem('fullscreen', isFullscreen);
+}
+
+// Exit fullscreen from tab bar
+exitFullscreenBtn.onclick = () => {
+  exitFullscreen();
+  localStorage.setItem('fullscreen', false);
+}
+
+// Functions to handle fullscreen
+function enterFullscreen() {
+  iframe.style.position = 'fixed';
+  iframe.style.top = '0';
+  iframe.style.left = '0';
+  iframe.style.width = '100vw';
+  iframe.style.height = '100vh';
+  isFullscreen = true;
+  fullscreenBtn.textContent = 'Exit Fullscreen';
+  fullscreenBar.style.display = 'flex'; // show top tab bar
+}
+
+function exitFullscreen() {
+  iframe.style.position = '';
+  iframe.style.top = '';
+  iframe.style.left = '';
+  iframe.style.width = '';
+  iframe.style.height = '';
+  isFullscreen = false;
+  fullscreenBtn.textContent = 'Fullscreen';
+  fullscreenBar.style.display = 'none'; // hide top tab bar
+}
+</script>
+
+</body>
+</html>
