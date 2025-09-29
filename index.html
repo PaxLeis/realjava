@@ -3,7 +3,7 @@
 <head>
 <meta charset="UTF-8" />
 <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-<title>Game Loader with Fullscreen</title>
+<title>Resizable Popup Example</title>
 <style>
   body {
     font-family: Arial, sans-serif;
@@ -32,55 +32,53 @@
     position: fixed;
     top: 50%;
     left: 50%;
-    transform: translate(-50%, -50%);
+    width: 600px;
+    height: 400px;
     background: #222;
-    padding: 20px;
-    max-width: 600px;
-    width: 80%;
-    max-height: 80%;
-    overflow: auto;
-    border-radius: 10px;
     border: 2px solid #fff;
+    border-radius: 10px;
+    transform: translate(-50%, -50%);
+    display: flex;
+    flex-direction: column;
     z-index: 9999;
   }
-  #popup h2 {
-    margin-top: 0;
+  #popupHeader {
+    background: #333;
+    padding: 8px;
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
   }
-  #popup pre {
-    white-space: pre-wrap;
+  #popupHeader h2 {
+    margin: 0;
+    font-size: 16px;
   }
-  #popup #fullscreen-toggle {
-    margin-top: 10px;
-    padding: 8px 12px;
-    background: #555;
-    color: #fff;
+  #closeBtn {
+    background: none;
     border: none;
-    border-radius: 4px;
+    color: #fff;
+    font-size: 20px;
     cursor: pointer;
   }
-  #popup #fullscreen-toggle:hover {
-    background: #777;
+  #iframeContainer {
+    position: relative;
+    flex: 1;
+    display: flex;
   }
-  #popup #close-btn {
-    margin-top: 10px;
-    padding: 8px 12px;
-    background: #555;
-    color: #fff;
+  #gameIframe {
+    width: 100%;
+    height: 100%;
     border: none;
-    border-radius: 4px;
-    cursor: pointer;
   }
-  #popup #close-btn:hover {
-    background: #777;
-  }
-  /* Style for iframe when fullscreen mode toggled */
-  #game-iframe.fullscreen {
-    position: fixed;
-    top: 0;
-    left: 0;
-    width: 100vw;
-    height: 100vh;
-    z-index: 9998;
+  /* Resize handle styling */
+  #resizeHandle {
+    position: absolute;
+    right: 0;
+    bottom: 0;
+    width: 20px;
+    height: 20px;
+    cursor: nwse-resize;
+    background: transparent;
   }
 </style>
 </head>
@@ -88,88 +86,87 @@
 
 <div id="search-container">
   <form id="search-form" onsubmit="return false;">
-    <input type="text" id="search-box" placeholder="Search and type filename..." />
+    <input type="text" id="search-box" placeholder="Type filename..." />
   </form>
 </div>
 
-<!-- Popup for code or game -->
+<!-- Popup Container -->
 <div id="popup">
-  <h2 id="popup-title"></h2>
-  <pre id="popup-text"></pre>
-  <button id="fullscreen-toggle">Fullscreen</button>
-  <button id="close-btn">Close</button>
+  <div id="popupHeader">
+    <h2 id="popupTitle"></h2>
+    <button id="closeBtn">&times;</button>
+  </div>
+  <div id="iframeContainer">
+    <!-- iframe will be inserted here dynamically -->
+    <div id="resizeHandle"></div>
+  </div>
 </div>
 
 <script>
 const validFiles = ['survivalrace.html', 'amongus.html', '1v1lol.html', 'snowrider.html', 'pollytrack.html', 'smashyroad.html'];
-
 const popup = document.getElementById('popup');
-const popupTitle = document.getElementById('popup-title');
-const popupText = document.getElementById('popup-text');
-const closeBtn = document.getElementById('close-btn');
-const fullscreenBtn = document.getElementById('fullscreen-toggle');
-const iframe = document.createElement('iframe');
+const popupTitle = document.getElementById('popupTitle');
+const closeBtn = document.getElementById('closeBtn');
+const iframeContainer = document.getElementById('iframeContainer');
+const resizeHandle = document.getElementById('resizeHandle');
 
+let iframe = null;
+
+// Search handling
 document.getElementById('search-form').onsubmit = () => {
   const filename = document.getElementById('search-box').value.trim();
   if (filename.toLowerCase() === 'password') {
-    // Show the secret code list
-    popupTitle.textContent = 'Game List';
-    popupText.textContent = `8 Ball - "8ball.html"
-Car Arena - "car-arena.html"
-Flappy Dunk - "flappy-dunk.html"
-Snow Rider 3d - "snow-rider.html"
-Polly Track - "polly-track.html"
-Minecraft-parkour - "mine-park.html"
-Smashy Road - "escape-dunk.html"
-Among Us - "amongus.html"
-1v1.lol - "1v1lol.html"`;
-    popup.appendChild(iframe);
-    iframe.style.width = '100%';
-    iframe.style.height = '400px';
-    iframe.style.border = 'none';
-    iframe.src = '';
-    popup.style.display = 'block';
+    alert(`8 Ball - "8ball.html"\nCar Arena - "car-arena.html"\nFlappy Dunk - "flappy-dunk.html"\nSnow Rider 3d - "snow-rider.html"\nPolly Track - "polly-track.html"\nMinecraft-parkour - "mine-park.html"\nSmashy Road - "escape-dunk.html"\nAmong Us - "amongus.html"\n1v1.lol - "1v1lol.html"`);
   } else if (validFiles.includes(filename.toLowerCase())) {
-    // Show game popup with iframe
-    popupTitle.textContent = filename;
-    popupText.textContent = '';
-    // Remove previous iframe if any
-    if (iframe.parentNode) {
+    // Remove existing iframe if any
+    if (iframe && iframe.parentNode) {
       iframe.remove();
     }
-    // Append new iframe
-    popup.appendChild(iframe);
+    // Create new iframe
+    iframe = document.createElement('iframe');
+    iframe.id = 'gameIframe';
     iframe.src = filename;
     iframe.style.width = '100%';
-    iframe.style.height = '400px';
-    iframe.style.border = 'none';
-
-    // Reset fullscreen class
-    iframe.classList.remove('fullscreen');
-
+    iframe.style.height = '100%';
+    iframeContainer.appendChild(iframe);
     // Show popup
-    popup.style.display = 'block';
-
+    popup.style.display = 'flex';
   } else {
-    // fallback: Google search
     window.open('https://www.google.com/search?q=' + encodeURIComponent(filename), '_blank');
   }
   return false;
 };
 
+// Close popup
 closeBtn.onclick = () => {
   popup.style.display='none';
-};
-
-// Toggle fullscreen on click
-document.getElementById('fullscreen-toggle').onclick = () => {
-  if (iframe.classList.contains('fullscreen')) {
-    iframe.classList.remove('fullscreen');
-  } else {
-    iframe.classList.add('fullscreen');
+  if (iframe && iframe.parentNode) {
+    iframe.remove();
   }
 };
+
+// Resizing functionality
+let isResizing = false;
+
+resizeHandle.addEventListener('mousedown', () => {
+  isResizing = true;
+});
+
+document.addEventListener('mouseup', () => {
+  isResizing = false;
+});
+
+document.addEventListener('mousemove', (e) => {
+  if (isResizing && popup.style.display === 'flex') {
+    // Calculate new size based on mouse position
+    const rect = popup.getBoundingClientRect();
+    const newWidth = e.clientX - rect.left;
+    const newHeight = e.clientY - rect.top;
+    // Set minimum size limits
+    popup.style.width = Math.max(newWidth, 200) + 'px';
+    popup.style.height = Math.max(newHeight, 150) + 'px';
+  }
+});
 </script>
 
 </body>
