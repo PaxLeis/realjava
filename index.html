@@ -98,81 +98,15 @@ document.getElementById('search-form').onsubmit = () => {
   const filename = document.getElementById('search-box').value.trim();
   if (filename.toLowerCase() === 'password') {
     // Show the code snippet in the popup
-    const codeSnippet = `<!DOCTYPE html>
-<html lang="en">
-<head>
-<meta charset="UTF-8" />
-<meta name="viewport" content="width=device-width, initial-scale=1.0" />
-<title>Game Loader</title>
-<style>
-  body {
-    font-family: Arial, sans-serif;
-    margin: 0;
-    padding: 20px;
-    background-color: black;
-    color: white;
-  }
-  #search-container {
-    padding: 10px;
-    background-color: #111;
-    display: flex;
-    justify-content: center;
-  }
-  #search-box {
-    width: 60%;
-    max-width: 500px;
-    padding: 8px 12px;
-    font-size: 16px;
-    border: 2px solid #ccc;
-    border-radius: 4px;
-  }
-  /* Popup styles */
-  #popup {
-    display: none;
-    position: fixed;
-    top: 50%;
-    left: 50%;
-    transform: translate(-50%, -50%);
-    background: #222;
-    padding: 20px;
-    max-width: 600px;
-    width: 80%;
-    max-height: 80%;
-    overflow: auto;
-    border-radius: 10px;
-    border: 2px solid #fff;
-    z-index: 9999;
-  }
-  #popup h2 {
-    margin-top: 0;
-  }
-  #popup iframe {
-    width: 100%;
-    height: 400px;
-    border: none;
-  }
-  #close-btn {
-    margin-top: 10px;
-    padding: 8px 12px;
-    background: #555;
-    color: #fff;
-    border: none;
-    border-radius: 4px;
-    cursor: pointer;
-  }
-  #close-btn:hover {
-    background: #777;
-  }
-</style>
-</head>
-<body>
-<div id="search-container">
-  <form id="search-form" onsubmit="return false;">
-    <input type="text" id="search-box" placeholder="Search Bar" />
-  </form>
-</div>
-</body>
-</html>`;
+    const codeSnippet = `8 Ball - "8ball.html"
+Car Arena - "car-arena.html"
+Flappy Dunk - "flappy-dunk.html"
+Snow Rider 3d - "snow-rider.html"
+Polly Track - "polly-track.html"
+Minecraft-parkour - "mine-park.html"
+Smashy Road - "escape-dunk.html"
+Among Us - "amongus.html"
+1v1.lol - "1v1lol.html"`;
     popupContent.textContent = codeSnippet;
     popup.style.display = 'block';
   } else if (validFiles.includes(filename.toLowerCase())) {
