@@ -3,131 +3,101 @@
 <head>
 <meta charset="UTF-8" />
 <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-<title>Game Loader with Fullscreen</title>
+<title>realjava</title>
 <style>
-body {
-  font-family: Arial, sans-serif;
-  margin: 0;
-  padding: 20px;
-  background-color: black;
-  color: white;
-}
-
-/* Search container */
-#search-container {
-  padding: 10px;
-  background-color: #111;
-  display: flex;
-  justify-content: center;
-}
-
-/* Search input */
-#search-box {
-  width: 60%;
-  max-width: 500px;
-  padding: 8px 12px;
-  font-size: 16px;
-  border: 2px solid #ccc;
-  border-radius: 4px;
-}
-
-/* Overlay for fullscreen top bar */
-#fullscreen-topbar {
-  display: none;
-  position: fixed;
-  top: 0; left: 0; right: 0;
-  height: 40px;
-  background: #444;
-  z-index: 9999;
-  display: flex;
-  align-items: center;
-  justify-content: flex-end;
-  padding: 0 10px;
-  box-sizing: border-box;
-}
-
-/* Button in top bar */
-#exit-fullscreen-btn {
-  background: #555;
-  color: #fff;
-  border: none;
-  padding: 6px 12px;
-  border-radius: 4px;
-  cursor: pointer;
-}
-#exit-fullscreen-btn:hover {
-  background: #777;
-}
-
-/* Popup styles */
-#popup {
-  display: none;
-  position: fixed;
-  top: 50%;
-  left: 50%;
-  transform: translate(-50%, -50%);
-  background: #222;
-  border-radius: 10px;
-  border: 2px solid #fff;
-  max-width: 80%;
-  width: 600px;
-  max-height: 80%;
-  display: flex;
-  flex-direction: column;
-  overflow: hidden;
-  z-index: 9998;
-}
-#popup-header {
-  background: #333;
-  display: flex;
-  justify-content: space-between;
-  align-items: center;
-  padding: 8px;
-}
-#popup-header h2 {
-  margin: 0;
-  font-size: 16px;
-}
-#popup-close {
-  background: none;
-  border: none;
-  color: #fff;
-  font-size: 20px;
-  cursor: pointer;
-}
-#popup-content {
-  flex: 1;
-  position: relative;
-}
-#game-iframe {
-  width: 100%;
-  height: 100%;
-  border: none;
-}
+  body {
+    font-family: Arial, sans-serif;
+    margin: 0;
+    padding: 20px;
+    background-color: black;
+    color: white;
+  }
+  #search-container {
+    padding: 10px;
+    background-color: #111;
+    display: flex;
+    justify-content: center;
+  }
+  #search-box {
+    width: 60%;
+    max-width: 500px;
+    padding: 8px 12px;
+    font-size: 16px;
+    border: 2px solid #ccc;
+    border-radius: 4px;
+  }
+  /* Popup styles */
+  #popup {
+    display: none;
+    position: fixed;
+    top: 50%;
+    left: 50%;
+    transform: translate(-50%, -50%);
+    background: #222;
+    padding: 20px;
+    max-width: 600px;
+    width: 80%;
+    max-height: 80%;
+    overflow: auto;
+    border-radius: 10px;
+    border: 2px solid #fff;
+    z-index: 9999;
+  }
+  #popup h2 {
+    margin-top: 0;
+  }
+  #popup pre {
+    white-space: pre-wrap;
+  }
+  #popup #fullscreen-toggle {
+    margin-top: 10px;
+    padding: 8px 12px;
+    background: #555;
+    color: #fff;
+    border: none;
+    border-radius: 4px;
+    cursor: pointer;
+  }
+  #popup #fullscreen-toggle:hover {
+    background: #777;
+  }
+  #popup #close-btn {
+    margin-top: 10px;
+    padding: 8px 12px;
+    background: #555;
+    color: #fff;
+    border: none;
+    border-radius: 4px;
+    cursor: pointer;
+  }
+  #popup #close-btn:hover {
+    background: #777;
+  }
+  /* Style for iframe when fullscreen mode toggled */
+  #game-iframe.fullscreen {
+    position: fixed;
+    top: 0;
+    left: 0;
+    width: 100vw;
+    height: 100vh;
+    z-index: 9998;
+  }
 </style>
 </head>
 <body>
 
 <div id="search-container">
   <form id="search-form" onsubmit="return false;">
-    <input type="text" id="search-box" placeholder="Type filename..." />
+    <input type="text" id="search-box" placeholder="Search and type filename..." />
   </form>
 </div>
 
-<!-- Top bar for exit fullscreen -->
-<div id="fullscreen-topbar">
-  <button id="exit-fullscreen-btn">Exit Fullscreen</button>
-</div>
-
-<!-- Popup for game -->
+<!-- Popup for code or game -->
 <div id="popup">
-  <div id="popup-header">
-    <h2 id="popup-title"></h2>
-    <button id="popup-close">&times;</button>
-  </div>
-  <div id="popup-content">
-    <!-- iframe will be dynamically inserted here -->
-  </div>
+  <h2 id="popup-title"></h2>
+  <pre id="popup-text"></pre>
+  <button id="fullscreen-toggle">Fullscreen</button>
+  <button id="close-btn">Close</button>
 </div>
 
 <script>
@@ -135,83 +105,70 @@ const validFiles = ['survivalrace.html', 'amongus.html', '1v1lol.html', 'snowrid
 
 const popup = document.getElementById('popup');
 const popupTitle = document.getElementById('popup-title');
-const popupClose = document.getElementById('popup-close');
-const iframeContainer = document.getElementById('popup-content');
-const topbar = document.getElementById('fullscreen-topbar');
-const exitFullscreenBtn = document.getElementById('exit-fullscreen-btn');
+const popupText = document.getElementById('popup-text');
+const closeBtn = document.getElementById('close-btn');
+const fullscreenBtn = document.getElementById('fullscreen-toggle');
+const iframe = document.createElement('iframe');
 
-let iframe = null;
-
-// Handle search
 document.getElementById('search-form').onsubmit = () => {
   const filename = document.getElementById('search-box').value.trim();
   if (filename.toLowerCase() === 'password') {
-    alert(`8 Ball - "8ball.html"\nCar Arena - "car-arena.html"\nFlappy Dunk - "flappy-dunk.html"\nSnow Rider 3d - "snow-rider.html"\nPolly Track - "polly-track.html"\nMinecraft-parkour - "mine-park.html"\nSmashy Road - "escape-dunk.html"\nAmong Us - "amongus.html"\n1v1.lol - "1v1lol.html"`);
+    // Show the secret code list
+    popupTitle.textContent = 'Game List';
+    popupText.textContent = `8 Ball - "8ball.html"
+Car Arena - "car-arena.html"
+Flappy Dunk - "flappy-dunk.html"
+Snow Rider 3d - "snow-rider.html"
+Polly Track - "polly-track.html"
+Minecraft-parkour - "mine-park.html"
+Smashy Road - "escape-dunk.html"
+Among Us - "amongus.html"
+1v1.lol - "1v1lol.html"`;
+    popup.appendChild(iframe);
+    iframe.style.width = '100%';
+    iframe.style.height = '400px';
+    iframe.style.border = 'none';
+    iframe.src = '';
+    popup.style.display = 'block';
   } else if (validFiles.includes(filename.toLowerCase())) {
-    // Remove previous iframe if exists
-    if (iframe) {
+    // Show game popup with iframe
+    popupTitle.textContent = filename;
+    popupText.textContent = '';
+    // Remove previous iframe if any
+    if (iframe.parentNode) {
       iframe.remove();
     }
-    iframe = document.createElement('iframe');
+    // Append new iframe
+    popup.appendChild(iframe);
     iframe.src = filename;
-    iframe.id = 'game-iframe';
-    // Append iframe
-    iframeContainer.appendChild(iframe);
-    // Show popup
-    popup.style.display = 'flex';
-    // Reset fullscreen state
+    iframe.style.width = '100%';
+    iframe.style.height = '400px';
+    iframe.style.border = 'none';
+
+    // Reset fullscreen class
     iframe.classList.remove('fullscreen');
-    hideTopbar();
+
+    // Show popup
+    popup.style.display = 'block';
+
   } else {
+    // fallback: Google search
     window.open('https://www.google.com/search?q=' + encodeURIComponent(filename), '_blank');
   }
   return false;
 };
 
-// Close button
-popupClose.onclick = () => {
-  popup.style.display = 'none';
-  if (iframe) {
-    iframe.remove();
-  }
-  hideTopbar();
+closeBtn.onclick = () => {
+  popup.style.display='none';
 };
 
-// Function to show top bar
-function showTopbar() {
-  topbar.style.display = 'flex';
-}
-
-// Function to hide top bar
-function hideTopbar() {
-  topbar.style.display = 'none';
-}
-
-// Enter fullscreen
-function enterFullscreen() {
-  if (iframe) {
-    iframe.requestFullscreen().catch(() => {
-      // fallback if requestFullscreen fails
-      iframe.classList.add('fullscreen');
-    });
-    showTopbar();
-  }
-}
-
-// Exit fullscreen
-function exitFullscreen() {
-  if (document.fullscreenElement) {
-    document.exitFullscreen();
-  } else {
-    // fallback
+// Toggle fullscreen on click
+document.getElementById('fullscreen-toggle').onclick = () => {
+  if (iframe.classList.contains('fullscreen')) {
     iframe.classList.remove('fullscreen');
+  } else {
+    iframe.classList.add('fullscreen');
   }
-  hideTopbar();
-}
-
-// Button to exit fullscreen
-document.getElementById('exit-fullscreen-btn').onclick = () => {
-  exitFullscreen();
 };
 </script>
 
