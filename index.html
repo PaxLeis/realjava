@@ -3,7 +3,7 @@
 <head>
 <meta charset="UTF-8" />
 <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-<title>Game Loader with Fullscreen</title>
+<title>realjava</title>
 <style>
   body {
     font-family: Arial, sans-serif;
@@ -49,18 +49,6 @@
   #popup pre {
     white-space: pre-wrap;
   }
-  #popup #fullscreen-toggle {
-    margin-top: 10px;
-    padding: 8px 12px;
-    background: #555;
-    color: #fff;
-    border: none;
-    border-radius: 4px;
-    cursor: pointer;
-  }
-  #popup #fullscreen-toggle:hover {
-    background: #777;
-  }
   #popup #close-btn {
     margin-top: 10px;
     padding: 8px 12px;
@@ -82,6 +70,13 @@
     height: 100vh;
     z-index: 9998;
   }
+
+  /* Make iframe resizable with drag corner */
+  #game-iframe {
+    resize: both; /* allows resizing */
+    overflow: auto; /* show scrollbars if needed */
+    border: none;
+  }
 </style>
 </head>
 <body>
@@ -96,7 +91,6 @@
 <div id="popup">
   <h2 id="popup-title"></h2>
   <pre id="popup-text"></pre>
-  <button id="fullscreen-toggle">Fullscreen</button>
   <button id="close-btn">Close</button>
 </div>
 
@@ -107,7 +101,6 @@ const popup = document.getElementById('popup');
 const popupTitle = document.getElementById('popup-title');
 const popupText = document.getElementById('popup-text');
 const closeBtn = document.getElementById('close-btn');
-const fullscreenBtn = document.getElementById('fullscreen-toggle');
 const iframe = document.createElement('iframe');
 
 document.getElementById('search-form').onsubmit = () => {
@@ -134,11 +127,9 @@ Among Us - "amongus.html"
     // Show game popup with iframe
     popupTitle.textContent = filename;
     popupText.textContent = '';
-    // Remove previous iframe if any
     if (iframe.parentNode) {
       iframe.remove();
     }
-    // Append new iframe
     popup.appendChild(iframe);
     iframe.src = filename;
     iframe.style.width = '100%';
@@ -160,15 +151,6 @@ Among Us - "amongus.html"
 
 closeBtn.onclick = () => {
   popup.style.display='none';
-};
-
-// Toggle fullscreen on click
-document.getElementById('fullscreen-toggle').onclick = () => {
-  if (iframe.classList.contains('fullscreen')) {
-    iframe.classList.remove('fullscreen');
-  } else {
-    iframe.classList.add('fullscreen');
-  }
 };
 </script>
 
