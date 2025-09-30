@@ -3,7 +3,7 @@
 <head>
 <meta charset="UTF-8" />
 <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-<title>realjava</title>
+<title>Game Loader with Resizable Iframe</title>
 <style>
   body {
     font-family: Arial, sans-serif;
@@ -61,21 +61,13 @@
   #popup #close-btn:hover {
     background: #777;
   }
-  /* Style for iframe when fullscreen mode toggled */
-  #game-iframe.fullscreen {
-    position: fixed;
-    top: 0;
-    left: 0;
-    width: 100vw;
-    height: 100vh;
-    z-index: 9998;
-  }
-
   /* Make iframe resizable with drag corner */
   #game-iframe {
-    resize: both; /* allows resizing */
-    overflow: auto; /* show scrollbars if needed */
+    resize: both; /* Enable resize */
+    overflow: auto; /* Show scrollbars if needed */
     border: none;
+    width: 100%;
+    height: 400px; /* default height */
   }
 </style>
 </head>
@@ -87,7 +79,7 @@
   </form>
 </div>
 
-<!-- Popup for code or game -->
+<!-- Popup for game -->
 <div id="popup">
   <h2 id="popup-title"></h2>
   <pre id="popup-text"></pre>
@@ -106,7 +98,7 @@ const iframe = document.createElement('iframe');
 document.getElementById('search-form').onsubmit = () => {
   const filename = document.getElementById('search-box').value.trim();
   if (filename.toLowerCase() === 'password') {
-    // Show the secret code list
+    // Show secret game list
     popupTitle.textContent = 'Game List';
     popupText.textContent = `8 Ball - "8ball.html"
 Car Arena - "car-arena.html"
@@ -117,11 +109,7 @@ Minecraft-parkour - "mine-park.html"
 Smashy Road - "escape-dunk.html"
 Among Us - "amongus.html"
 1v1.lol - "1v1lol.html"`;
-    popup.appendChild(iframe);
-    iframe.style.width = '100%';
-    iframe.style.height = '400px';
-    iframe.style.border = 'none';
-    iframe.src = '';
+    // No iframe needed here
     popup.style.display = 'block';
   } else if (validFiles.includes(filename.toLowerCase())) {
     // Show game popup with iframe
@@ -130,18 +118,15 @@ Among Us - "amongus.html"
     if (iframe.parentNode) {
       iframe.remove();
     }
-    popup.appendChild(iframe);
+    // Configure iframe
     iframe.src = filename;
     iframe.style.width = '100%';
-    iframe.style.height = '400px';
-    iframe.style.border = 'none';
-
-    // Reset fullscreen class
-    iframe.classList.remove('fullscreen');
-
+    iframe.style.height = '400px'; // default height
+    iframe.className = ''; // remove any class
+    // Append iframe
+    popup.appendChild(iframe);
     // Show popup
     popup.style.display = 'block';
-
   } else {
     // fallback: Google search
     window.open('https://www.google.com/search?q=' + encodeURIComponent(filename), '_blank');
